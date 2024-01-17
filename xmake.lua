@@ -5,40 +5,43 @@
 --  @license CC0 1.0 Universal
 --
 
-toolchain("cosmocc")
-    set_kind("standalone")
-    on_load(function (toolchain)
---      @see https://github.com/jart/cosmopolitan/tree/master/tool/cosmocc#gotchas
-        if((is_host("windows"))and(is_subhost("windows")))then
-        cprint('${bright red}I guess you should run it with WSL/MSYS/cygwin/mingw\nbtw I don\'t know would it work with git-bash4windows\n')
-        os.exit()
-        end
+-- toolchain("cosmocc")
+--     set_kind("standalone")
+--     on_load(function (toolchain)
+-- --      @see https://github.com/jart/cosmopolitan/tree/master/tool/cosmocc#gotchas
+--         if((is_host("windows"))and(is_subhost("windows")))then
+--         cprint('${bright red}I guess you should run it with WSL/MSYS/cygwin/mingw\nbtw I don\'t know would it work with git-bash4windows\n')
+--         os.exit()
+--         end
 
-        import("lib.detect.find_program")
-        local cosmocc_exist=find_program("cosmocc",{paths={"cosmocc/bin"},check="--version"})
-        if(not cosmocc_exist) then
-            import("net.http")
-            print("cosmocc not found, now downloading...")
-            http.download("https://cosmo.zip/pub/cosmocc/cosmocc.zip","cosmocc.zip")
-            import("utils.archive")
-            archive.extract("cosmocc.zip","cosmocc")
-            print("cosmocc downloaded.")
-        end
-        toolchain:set("bindir","cosmocc/bin")--TODO:Use lib.detect.find_path
-        toolchain:set("toolset","cc","gcc@cosmocc")
-        toolchain:set("toolset","cxx","gcc@cosmocc")
-        toolchain:set("toolset","ld","gcc@cosmocc")
-        --toolchain:set("toolset","cxx","g++@cosmoc++") -- Causing "error: cannot runv(cosmoc++ -c -o build/.objs/main.com/unknown/unknown/release/src/<c++ source>.cpp.o src/<c++ source>.cpp), No such file or directory" Error
+--         import("lib.detect.find_program")
+--         local cosmocc_exist=find_program("cosmocc",{paths={"cosmocc/bin"},check="--version"})
+--         if(not cosmocc_exist) then
+--             import("net.http")
+--             print("cosmocc not found, now downloading...")
+--             http.download("https://cosmo.zip/pub/cosmocc/cosmocc.zip","cosmocc.zip")
+--             import("utils.archive")
+--             archive.extract("cosmocc.zip","cosmocc")
+--             print("cosmocc downloaded.")
+--         end
+--         toolchain:set("bindir","cosmocc/bin")--TODO:Use lib.detect.find_path
+--         toolchain:set("toolset","cc","gcc@cosmocc")
+--         toolchain:set("toolset","cxx","gcc@cosmocc")
+--         toolchain:set("toolset","ld","gcc@cosmocc")
+--         --toolchain:set("toolset","cxx","g++@cosmoc++") -- Causing "error: cannot runv(cosmoc++ -c -o build/.objs/main.com/unknown/unknown/release/src/<c++ source>.cpp.o src/<c++ source>.cpp), No such file or directory" Error
 
-        --toolchain:set("toolset","ld","gcc@cosmocc","g++@cosmoc++") -- Same as above
-
-
-    end)
-toolchain_end()
+--         --toolchain:set("toolset","ld","gcc@cosmocc","g++@cosmoc++") -- Same as above
 
 
+--     end)
+--     -- on_build_file()
+-- toolchain_end()
+
+includes("toolchains/*.lua")
+includes("rules/*.lua")
 target("main.com")
     set_kind("binary")
+    -- add_rules("")
     set_toolchains("cosmocc")
     set_plat("unknown")
     set_arch("unknown") -- for now(2023-12-26) APE supports amd64 and aarch64, remove this comment when riscv64 and loong64 are supported

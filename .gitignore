@@ -9,3 +9,9 @@ build/
 cosmocc/
 cosmocc.zip
 
+# vscode
+.settings/
+.vscode/
+bin/
+.classpath
+.project
