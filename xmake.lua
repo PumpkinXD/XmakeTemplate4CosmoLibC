@@ -1,55 +1,70 @@
 --
 --  xmake template for cosmopolitan libc project (c11/cpp14)
---  @version 0.0.1
+--  @version 0.0.2
 --  @auther PumpkinXD
 --  @license CC0 1.0 Universal
 --
 
--- toolchain("cosmocc")
---     set_kind("standalone")
---     on_load(function (toolchain)
--- --      @see https://github.com/jart/cosmopolitan/tree/master/tool/cosmocc#gotchas
---         if((is_host("windows"))and(is_subhost("windows")))then
---         cprint('${bright red}I guess you should run it with WSL/MSYS/cygwin/mingw\nbtw I don\'t know would it work with git-bash4windows\n')
---         os.exit()
---         end
 
---         import("lib.detect.find_program")
---         local cosmocc_exist=find_program("cosmocc",{paths={"cosmocc/bin"},check="--version"})
---         if(not cosmocc_exist) then
---             import("net.http")
---             print("cosmocc not found, now downloading...")
---             http.download("https://cosmo.zip/pub/cosmocc/cosmocc.zip","cosmocc.zip")
---             import("utils.archive")
---             archive.extract("cosmocc.zip","cosmocc")
---             print("cosmocc downloaded.")
---         end
---         toolchain:set("bindir","cosmocc/bin")--TODO:Use lib.detect.find_path
---         toolchain:set("toolset","cc","gcc@cosmocc")
---         toolchain:set("toolset","cxx","gcc@cosmocc")
---         toolchain:set("toolset","ld","gcc@cosmocc")
---         --toolchain:set("toolset","cxx","g++@cosmoc++") -- Causing "error: cannot runv(cosmoc++ -c -o build/.objs/main.com/unknown/unknown/release/src/<c++ source>.cpp.o src/<c++ source>.cpp), No such file or directory" Error
+includes("toolchains/cosmocc.lua")
+includes("rules/cosmocc.lua")
 
---         --toolchain:set("toolset","ld","gcc@cosmocc","g++@cosmoc++") -- Same as above
-
-
---     end)
---     -- on_build_file()
--- toolchain_end()
-
-includes("toolchains/*.lua")
-includes("rules/*.lua")
 target("main.com")
     set_kind("binary")
-    -- add_rules("")
     set_toolchains("cosmocc")
     set_plat("unknown")
     set_arch("unknown") -- for now(2023-12-26) APE supports amd64 and aarch64, remove this comment when riscv64 and loong64 are supported
 --     set_extension("com") -- Causing "cosmocc: fatal error: build/.objs/main/unknown/unknown/release/src/main.c.o: linker input missing concomitant build/.objs/main/unknown/unknown/release/src/.aarch64/main.c.o file" Error
     set_languages("c11","cxx14") -- c11 and cpp14 https://xmake.io/#/manual/project_target?id=targetset_languages
     add_includedirs("include")
-    add_files("src/*.c")
+    add_files("src/*.c",{rule = "cosmolibc.c.binary"})
 --     add_files("src/*.cpp") -- Causing "cannot match add_files("src/*.cpp") in target(main.com)" Warning if c++ source file(s) are not exist inside "src"
+
+
+
+        on_build_file(function (target, sourcefile, opt)
+--         @see https://github.com/xmake-io/xmake/issues/1246#issuecomment-782698333
+        import("core.base.option")
+        import("core.theme.theme")
+        import("core.project.config")
+        import("core.project.depend")
+        import("core.tool.compiler")
+        import("utils.progress")
+--         import("private.utils.progress")
+
+        local objectfile = target:objectfile(sourcefile)
+
+        -- load compiler
+        local compinst = compiler.load((extension ==  "cxx" or "cc"), {target = target})
+
+        -- get compile flags
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx})
+
+        -- add objectfile
+        table.insert(target:objectfiles(), objectfile)
+
+        -- load dependent info
+        local dependfile = target:dependfile(objectfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+        -- need build this object?
+        local depvalues = {compinst:program(), compflags}
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
+            return
+        end
+        -- trace progress info
+        progress.show(opt.progress, "${color.build.object}compiling.cosmocc %s", sourcefile)
+
+        cprint('${blue}target:on_build_file')
+        cprint('${yellow}'..sourcefile)
+        cprint('${green}'..objectfile)
+        cprint('${cyan}'..dependfile)
+    end)
+    on_link(function (target)
+        print("target:on_link disabled")
+    end)
+
+
 
 target_end()
 

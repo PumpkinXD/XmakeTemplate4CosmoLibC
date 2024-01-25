@@ -5,4 +5,8 @@
 #include "libc/calls/struct/utsname.h"
 #include "libc/stdio/stdio.h"
 
+
+
+void say_hi();
+
 #endif  /* _EXAMPLE_H_ */
