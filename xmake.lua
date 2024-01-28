@@ -38,7 +38,7 @@ target("main.com")
         local compinst = compiler.load((extension ==  "cxx" or "cc"), {target = target})
 
         -- get compile flags
-        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx})
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile})
 
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
@@ -55,10 +55,22 @@ target("main.com")
         -- trace progress info
         progress.show(opt.progress, "${color.build.object}compiling.cosmocc %s", sourcefile)
 
-        cprint('${blue}target:on_build_file')
-        cprint('${yellow}'..sourcefile)
-        cprint('${green}'..objectfile)
-        cprint('${cyan}'..dependfile)
+--         cprint('${blue}target:on_build_file')
+--         compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags,shell=true})
+        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags,shell= true}))
+
+
+        dependinfo.values = depvalues
+--         table.insert(dependinfo.files, sourcefile)
+        dependinfo.files=sourcefile
+        print(dependinfo)
+        print(dependinfo.values)
+        print(dependinfo.files)
+        depend.save(dependinfo, dependfile)
+--         cprint('${yellow}'..sourcefile)
+--         cprint('${green}'..objectfile)
+--         cprint('${cyan}'..dependfile)
+--         print(compinst)
     end)
     on_link(function (target)
         print("target:on_link disabled")
