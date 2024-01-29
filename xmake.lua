@@ -7,7 +7,7 @@
 
 
 includes("toolchains/cosmocc.lua")
-includes("rules/cosmocc.lua")
+
 
 target("main.com")
     set_kind("binary")
@@ -59,7 +59,7 @@ target("main.com")
 
 --         print(objectfiles)
         depend.on_changed(function ()
-            progress.show(opt.progress, "${color.build.object}linking.$(mode) %s", targetfile)
+            progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", targetfile)
             linker.link(target:get("kind"), "cc", objectfiles, target:targetfile(), {target = target, shell = true})
         end,
         {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles, changed = target:is_rebuilt()})

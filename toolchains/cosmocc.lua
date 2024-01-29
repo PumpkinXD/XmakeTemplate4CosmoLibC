@@ -30,7 +30,7 @@ toolchain("cosmocc")
 
 --      @see https://github.com/jart/cosmopolitan/tree/master/tool/cosmocc#gotchas
         if((is_host("windows"))and(is_subhost("windows")))then
-            cprint('${bright red}I guess you should run it with WSL/MSYS/cygwin/mingw')
+            cprint('${bright color.error}I guess you should run it with WSL/MSYS/cygwin/mingw')
             os.exit()
         end
 
