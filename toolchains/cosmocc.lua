@@ -26,10 +26,6 @@ toolchain("cosmocc")
 
 
     on_load(function (toolchain)
-        local cc
-        local ar
-
-
 
 
 --      @see https://github.com/jart/cosmopolitan/tree/master/tool/cosmocc#gotchas
@@ -62,54 +58,8 @@ toolchain("cosmocc")
         elseif (os.arch()=="aarch64")then
             toolchain:set("strip","gcc@aarch64-unknown-cosmo-strip")
         end 
-
-        -- copyed from gcc toolchain
-        -- local march
-        -- if march then
-        --     toolchain:add("cxflags", march)
-        --     toolchain:add("mxflags", march)
-        --     toolchain:add("asflags", march)
-        --     toolchain:add("ldflags", march)
-        --     toolchain:add("shflags", march)
-        --     end 
         
 
     end)
 
-    -- on_build_file(function () 
-        
-    -- end)
-    -- on_link(function (target) 
-        
-    -- end)
-
-
-
-
-
-
 toolchain_end()
-
-
-
--- rule("cosmolibc.c")
---     set_extensions(".c")
---     set_sourcekinds("cosmocc")
---     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
---         --print(target)
---         print(sourcefile)
---         local objectfile = target:objectfile(sourcefile)
---         table.insert(target:objectfiles(), objectfile)
---         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cosmolibc.c %s", sourcefile)
---         -- local include=target.includes
---         -- print(include)
---         batchcmds:vrunv("cosmocc/bin/cosmocc", {"-c","-std=c11","-o", objectfile,"-Iinclude", sourcefile},{shell=true})
---         -- batchcmds:compile(sourcefile, objectfile)
---         -- batchcmds:set_depcache(target:dependfile(objectfile))
---     end)
---     on_link(function (target)
---         -- print(target)
---         print(target:objectfiles())
---     end)
-
--- rule_end()

@@ -17,63 +17,53 @@ target("main.com")
 --     set_extension("com") -- Causing "cosmocc: fatal error: build/.objs/main/unknown/unknown/release/src/main.c.o: linker input missing concomitant build/.objs/main/unknown/unknown/release/src/.aarch64/main.c.o file" Error
     set_languages("c11","cxx14") -- c11 and cpp14 https://xmake.io/#/manual/project_target?id=targetset_languages
     add_includedirs("include")
-    add_files("src/*.c",{rule = "cosmolibc.c.binary"})
+    add_files("src/*.c")
 --     add_files("src/*.cpp") -- Causing "cannot match add_files("src/*.cpp") in target(main.com)" Warning if c++ source file(s) are not exist inside "src"
 
 
+    on_build_file(function (target, sourcefile, opt)
 
-        on_build_file(function (target, sourcefile, opt)
---         @see https://github.com/xmake-io/xmake/issues/1246#issuecomment-782698333
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.config")
         import("core.project.depend")
+        import("core.project.project")
         import("core.tool.compiler")
         import("utils.progress")
---         import("private.utils.progress")
 
         local objectfile = target:objectfile(sourcefile)
-
-        -- load compiler
-        local compinst = compiler.load((extension ==  "cxx" or "cc"), {target = target})
-
-        -- get compile flags
-        local compflags = compinst:compflags({target = target, sourcefile = sourcefile})
-
-        -- add objectfile
-        table.insert(target:objectfiles(), objectfile)
-
-        -- load dependent info
         local dependfile = target:dependfile(objectfile)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        local sourcefiles = target:sourcefiles()
 
-        -- need build this object?
-        local depvalues = {compinst:program(), compflags}
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-            return
-        end
-        -- trace progress info
-        progress.show(opt.progress, "${color.build.object}compiling.cosmocc %s", sourcefile)
+        depend.on_changed(function ()
+            progress.show(opt.progress, "${color.build.object}compiling.cosmocc.$(mode) %s", sourcefile)
+            compiler.compile(sourcefile, objectfile, {target = target, shell = true})
+        end,
+        {dependfile = dependfile, lastmtime = os.mtime(dependfile), files = sourcefiles, changed = target:is_rebuilt()})
 
---         cprint('${blue}target:on_build_file')
---         compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags,shell=true})
-        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags,shell= true}))
-
-
-        dependinfo.values = depvalues
---         table.insert(dependinfo.files, sourcefile)
-        dependinfo.files=sourcefile
-        print(dependinfo)
-        print(dependinfo.values)
-        print(dependinfo.files)
-        depend.save(dependinfo, dependfile)
---         cprint('${yellow}'..sourcefile)
---         cprint('${green}'..objectfile)
---         cprint('${cyan}'..dependfile)
---         print(compinst)
     end)
-    on_link(function (target)
-        print("target:on_link disabled")
+
+    on_link(function (target,opt)
+
+        import("core.base.option")
+        import("core.theme.theme")
+        import("core.project.config")
+        import("core.project.depend")
+        import("core.project.project")
+        import("core.tool.linker")
+        import("utils.progress")
+
+        local targetfile  = target:targetfile()
+        local dependfile  = target:dependfile(targetfile)
+        local objectfiles = target:objectfiles()
+
+--         print(objectfiles)
+        depend.on_changed(function ()
+            progress.show(opt.progress, "${color.build.object}linking.$(mode) %s", targetfile)
+            linker.link(target:get("kind"), "cc", objectfiles, target:targetfile(), {target = target, shell = true})
+        end,
+        {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles, changed = target:is_rebuilt()})
+
     end)
 
 
