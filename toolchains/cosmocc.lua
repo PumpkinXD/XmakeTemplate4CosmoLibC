@@ -7,19 +7,19 @@ toolchain("cosmocc")
     set_kind("standalone")
 
 
-    set_toolset("cc", "gcc@cosmocc")
-    set_toolset("cxx", "gcc@cosmocc", "gcc@cosmoc++" )
-    set_toolset("ld", "gcc@cosmocc", "gcc@cosmoc++")
-    set_toolset("sh", "gcc@cosmocc", "gcc@cosmoc++")
-    set_toolset("ar", "gcc@cosmoarar")
+    set_toolset("cc", "gcc@$(projectdir)/cosmocc/bin/cosmocc")
+    set_toolset("cxx", "gcc@cosmocc", "gcc@$(projectdir)/cosmocc/bin/cosmoc++" )
+    set_toolset("ld", "gcc@$(projectdir)/cosmocc/bin/cosmocc", "gcc@$(projectdir)/cosmocc/bin/cosmoc++")
+    set_toolset("sh", "gcc@$(projectdir)/cosmocc/bin/cosmocc", "gcc@$(projectdir)/cosmocc/bin/cosmoc++")
+    set_toolset("ar", "gcc@$(projectdir)/cosmocc/bin/cosmoarar")
     -- set_toolset("strip", "strip") -- aarch64-unknown-cosmo-strip or x86_64-unknown-cosmo-strip ?
-    set_toolset("mm", "gcc@cosmocc")
-    set_toolset("mxx", "gcc@cosmocc", "gcc@cosmoc++")
-    set_toolset("as", "gcc@cosmocc")
+    set_toolset("mm", "gcc@$(projectdir)/cosmocc/bin/cosmocc")
+    set_toolset("mxx", "gcc@$(projectdir)/cosmocc/bin/cosmocc", "gcc@$(projectdir)/cosmocc/bin/cosmoc++")
+    set_toolset("as", "gcc@$(projectdir)/cosmocc/bin/cosmocc")
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
-        local cosmocc=find_tool("cosmocc", {paths={"cosmocc/bin"},check = function (tool) os.runv(tool,{"--version"},{shell= true }) end})
+        local cosmocc=find_tool("cosmocc", {paths={"cosmocc/bin"},check = function (tool) os.runv(tool,{"--version"},{shell = true}) end})
 --         print(cosmocc)
         return cosmocc
     end)
@@ -35,6 +35,7 @@ toolchain("cosmocc")
         end
 
         toolchain:set("bindir","cosmocc/bin")
+        -- toolchain:set()
 
 --         import("lib.detect.find_tool")
 --         local toolchain_exist = find_tool("cosmocc", {paths={"cosmocc/bin"},check = function (tool) os.runv(tool,{"--version"},{shell=true}) end})
@@ -54,9 +55,9 @@ toolchain("cosmocc")
 
 
         if (os.arch()=="x86_64")then
-            toolchain:set("strip","gcc@x86_64-unknown-cosmo-strip")
+            toolchain:set("strip","gcc@$(projectdir)/cosmocc/bin/x86_64-unknown-cosmo-strip")
         elseif (os.arch()=="aarch64")then
-            toolchain:set("strip","gcc@aarch64-unknown-cosmo-strip")
+            toolchain:set("strip","gcc@$(projectdir)/cosmocc/bin/aarch64-unknown-cosmo-strip")
         end 
         
 

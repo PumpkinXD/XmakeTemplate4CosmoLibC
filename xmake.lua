@@ -37,7 +37,23 @@ target("main.com")
 
         depend.on_changed(function ()
             progress.show(opt.progress, "${color.build.object}compiling.cosmocc.$(mode) %s", sourcefile)
-            compiler.compile(sourcefile, objectfile, {target = target, shell = true})
+            if (not is_host("windows"))then
+                compiler.compile(sourcefile, objectfile, {target = target})
+            else 
+                
+                local sourcefile_cygwin=path.cygwin_path(sourcefile)
+                local objectfile_cygwin=path.cygwin_path(objectfile)
+                --local include_path_cygwin???
+
+                local tool,args = compiler.compargv(sourcefile_cygwin, objectfile_cygwin, {target = target})
+                -- local cmd=compiler.compcmd(sourcefile_cygwin, objectfile_cygwin, {target = target})
+                -- print(cmd)
+                local tool_cygwin=path.cygwin_path(tool)
+                print(tool_cygwin)
+                print(args)
+                -- os.execv("sh ".."cosmocc/bin/cosmocc",args)
+
+            end
         end,
         {dependfile = dependfile, lastmtime = os.mtime(dependfile), files = sourcefiles, changed = target:is_rebuilt()})
 
@@ -57,10 +73,29 @@ target("main.com")
         local dependfile  = target:dependfile(targetfile)
         local objectfiles = target:objectfiles()
 
---         print(objectfiles)
         depend.on_changed(function ()
             progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", targetfile)
-            linker.link(target:get("kind"), "cc", objectfiles, target:targetfile(), {target = target, shell = true})
+            if (not is_host("windows"))then
+                linker.link(target:get("kind"), "cc", objectfiles, target:targetfile(), {target = target})
+            else
+
+                local objectfiles_cygwin={}
+                local targetfile_cygwin=path.cygwin_path(targetfile)
+                for k,v in ipairs(objectfiles)do 
+                    local objectfile_cygwin=path.cygwin_path(v)
+                    table.insert(objectfiles_cygwin,objectfile_cygwin)
+                end
+                print(objectfiles_cygwin)
+                print(objectfiles)
+                print(targetfile_cygwin)
+                local tool,args=linker.linkargv(target:get("kind"), "cc", objectfiles_cygwin, targetfile_cygwin, {target = target}, {shell = true})
+                local tool_cygwin=path.cygwin_path(tool)
+                -- local cmdstr = linker.linkcmd(target:get("kind"), "cc", objectfiles, target:targetfile(), {target = target}, {shell = true})
+                -- print(cmdstr)
+
+                -- os.runv(cmdstr,{shell = true})
+            end 
+
         end,
         {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles, changed = target:is_rebuilt()})
 
