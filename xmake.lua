@@ -48,9 +48,11 @@ target("main.com")
                 local tool,args = compiler.compargv(sourcefile_cygwin, objectfile_cygwin, {target = target})
                 -- local cmd=compiler.compcmd(sourcefile_cygwin, objectfile_cygwin, {target = target})
                 -- print(cmd)
-                local tool_cygwin=path.cygwin_path(tool)
-                print(tool_cygwin)
-                print(args)
+                -- local tool_cygwin=path.cygwin_path(tool)
+                -- os.runv("sh "..tool_cygwin,args,{shell=true})
+                os.runv(tool,args,{shell=true})
+                -- print(tool_cygwin)
+                -- print(args)
                 -- os.execv("sh ".."cosmocc/bin/cosmocc",args)
 
             end
@@ -85,15 +87,11 @@ target("main.com")
                     local objectfile_cygwin=path.cygwin_path(v)
                     table.insert(objectfiles_cygwin,objectfile_cygwin)
                 end
-                print(objectfiles_cygwin)
-                print(objectfiles)
-                print(targetfile_cygwin)
-                local tool,args=linker.linkargv(target:get("kind"), "cc", objectfiles_cygwin, targetfile_cygwin, {target = target}, {shell = true})
-                local tool_cygwin=path.cygwin_path(tool)
-                -- local cmdstr = linker.linkcmd(target:get("kind"), "cc", objectfiles, target:targetfile(), {target = target}, {shell = true})
-                -- print(cmdstr)
 
-                -- os.runv(cmdstr,{shell = true})
+                local tool,args=linker.linkargv(target:get("kind"), "cc", objectfiles_cygwin, targetfile_cygwin, {target = target})
+                os.mkdir("$(buildir)/unknown/unknown/$(mode)")
+                os.execv(tool,args,{shell=true })
+
             end 
 
         end,

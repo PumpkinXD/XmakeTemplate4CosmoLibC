@@ -7,7 +7,7 @@ build/
 
 # cosmocc
 cosmocc/
-cosmocc.zip
+cosmocc*.zip
 
 # vscode
 .settings/
